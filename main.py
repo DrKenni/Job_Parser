@@ -1,3 +1,5 @@
+from utils import filter_vacancies, sort_vacancies, get_top_vacancies, print_vacancies
+from classes import Vacancy, JSONSaver, HeadHunterAPI, SuperJobAPI
 # Создание экземпляра класса для работы с API сайтов с вакансиями
 hh_api = HeadHunterAPI()
 superjob_api = SuperJobAPI()
@@ -14,6 +16,7 @@ json_saver = JSONSaver()
 json_saver.add_vacancy(vacancy)
 json_saver.get_vacancies_by_salary("100 000-150 000 руб.")
 json_saver.delete_vacancy(vacancy)
+
 
 # Функция для взаимодействия с пользователем
 def user_interaction():
