@@ -1,34 +1,79 @@
 from abc import ABC, abstractmethod
-import requests
+from requests import *
+import os
+from configparser import ParsingError
+import json
+from pprint import pprint
 
 
 class AbstractClass(ABC):
-    def get_vacancies(self, name_vacancy):
+    @abstractmethod
+    def get_vacancies(self, search_query, top_n):
         pass
 
 
 class HeadHunterAPI(AbstractClass):
     """Получает вакансии с HeadHunter"""
+    
     def __init__(self):
-        pass
+        self.__vacancies = []
 
-    def get_vacancies(self, name_vacancy):
-        pass
+    @property
+    def vacancies(self):
+        return self.__vacancies
 
+    @staticmethod
+    def get_formatted_vacancies(data):
+        formatted_vacancies = []
+        for vacancy in data:
+            formatted_vacancies.append({
+                'api': 'HeadHunter',
+                'title': vacancy['name'],
+                'url': vacancy['alternate_url'],
+                'salary_from': vacancy['salary']['from'],
+                'salary_to': vacancy['salary']['to'],
+                'currency': vacancy['salary']['currency'],
+                'employer': vacancy['employer']['name'],
+            })
+        return formatted_vacancies
+
+    def get_vacancies(self, search_query, top_n):
+        params = {'text': search_query,
+                  'page': 0,
+                  'per_page': 100}
+        response = get('https://api.hh.ru/vacancies/', params=params)
+        if response.status_code != 200:
+            raise ParsingError
+        else:
+            data = response.json()['items']
+            self.__vacancies.extend(self.get_formatted_vacancies(data))
+            return self.vacancies
+                # print(item['profession'])
+                # vacancies = Vacancy(item['name'], item['url'], item['salary'], item['snippet']['requirement'])
+
+hh = HeadHunterAPI()
+hh.get_vacancies(['Python'], 5)
 
 class SuperJobAPI(AbstractClass):
     """Получает вакансии с SuperJob"""
+    header = {"X-Api-App-Id": os.getenv('SJ_API_KEY')}
+
     def __init__(self):
         pass
 
-    def get_vacancies(self, name_vacancy):
+    def get_vacancies(self, search_query, top_n):
         pass
 
 
 class Vacancy:
     """Создает экземпляры класса для работы с вакансиями"""
-    def __init__(self, name, url, salary, requirements):
-        pass
+    __slots__ = ('name', 'url', 'salary', 'conditions')
+
+    def __init__(self, name, url, salary, conditions):
+        self.name = name
+        self.url = url
+        self.salary = salary
+        self.conditions = conditions
 
 
 class JSONSaver:
