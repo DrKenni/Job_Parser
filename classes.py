@@ -2,11 +2,14 @@ from abc import ABC, abstractmethod
 from requests import *
 import os
 from configparser import ParsingError
-import json
-from pprint import pprint
 
 
 class AbstractClass(ABC):
+
+    @abstractmethod
+    def get_request(self, search_query):
+        pass
+
     @abstractmethod
     def get_vacancies(self, search_query, top_n):
         pass
@@ -42,7 +45,7 @@ class HeadHunterAPI(AbstractClass):
             })
         return formatted_vacancies
 
-    def get_reqest(self, search_query):
+    def get_request(self, search_query):
         params = {'text': search_query,
                   'page': 0,
                   'per_page': 100}
@@ -54,7 +57,7 @@ class HeadHunterAPI(AbstractClass):
 
     def get_vacancies(self, search_query, top_n):
         try:
-            data = self.get_reqest(search_query)
+            data = self.get_request(search_query)
             self.__vacancies.extend(self.get_formatted_vacancies(data))
             return self.vacancies
         except ParsingError:
@@ -139,6 +142,9 @@ class Vacancy:
                f'Зарплата: {salary_from} {salary_to} {self.currency}' \
                f'Url: {self.url}'
 
+    # def __getitem__(self, item):
+    #     return item
+
     def __gt__(self, other):
         if other.salary_from is None:
             return True
@@ -152,17 +158,3 @@ class Vacancy:
         elif self.salary_from is None:
             return False
         return self.salary_from < other.salary_from
-
-
-class JSONSaver:
-    def __init__(self):
-        pass
-
-    def add_vacancy(self, vacancy):
-        pass
-
-    def get_vacancies_by_salary(self, salary):
-        pass
-
-    def delete_vacancy(self, vacancy):
-        pass
