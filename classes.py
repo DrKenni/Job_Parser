@@ -108,17 +108,50 @@ class SuperJobAPI(AbstractClass):
         except ParsingError:
             raise ParsingError('Ошибка получения данных с SuperJob')
 
-sj = SuperJobAPI()
-pprint(sj.get_vacancies('Python', 5))
+# sj = SuperJobAPI()
+# pprint(sj.get_vacancies('Python', 5))
+
+
 class Vacancy:
     """Создает экземпляры класса для работы с вакансиями"""
-    __slots__ = ('name', 'url', 'salary', 'conditions')
+    __slots__ = ('api', 'title', 'url', 'salary_from', 'salary_to', 'currency', 'employer')
 
-    def __init__(self, name, url, salary, conditions):
-        self.name = name
+    def __init__(self, api, title, url, salary_from, salary_to, currency, employer):
+        self.api = api
+        self.title = title
         self.url = url
-        self.salary = salary
-        self.conditions = conditions
+        self.salary_from = salary_from
+        self.salary_to = salary_to
+        self.currency = currency
+        self.employer = employer
+
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.__slots__})'
+
+    def __str__(self):
+        salary_from = f'От {self.salary_from}' if self.salary_from else ''
+        salary_to = f'От {self.salary_to}' if self.salary_to else ''
+        if self.salary_from and self.salary_to is 0:
+            self.salary_to = "Не указана"
+            self.salary_from = ''
+            self.currency = ''
+        return f'Компания: {self.employer}\nВакансия: {self.title}' \
+               f'Зарплата: {salary_from} {salary_to} {self.currency}' \
+               f'Url: {self.url}'
+
+    def __gt__(self, other):
+        if other.salary_from is None:
+            return True
+        elif self.salary_from is None:
+            return False
+        return self.salary_from > other.salary_from
+
+    def __lt__(self, other):
+        if other.salary_from is None:
+            return True
+        elif self.salary_from is None:
+            return False
+        return self.salary_from < other.salary_from
 
 
 class JSONSaver:
